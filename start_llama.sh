@@ -1,7 +1,10 @@
 #!/bin/bash
 
+# Define the absolute path to the config.yaml file
+CONFIG_FILE="$(dirname "$0")/config.yaml"
+
 # Load model value from config.yaml
-MODEL=$(grep 'model:' config.yaml | awk '{print $2}')
+MODEL=$(grep 'model:' "$CONFIG_FILE" | awk '{print $2}')
 
 # Kill any existing Ollama processes
 echo "Checking for any existing Ollama processes..."
@@ -14,12 +17,23 @@ sleep 2
 echo "Starting Ollama service..."
 nohup ollama run "$MODEL" > /tmp/ollama_start.log 2>&1 &
 
-# Wait a moment to allow the service to initialize
-sleep 3
+# Retry loop to wait for the Ollama service to start
+max_retries=5
+retry_interval=5
+attempt=1
 
-# Check if the Ollama service started successfully
-if pgrep -f "ollama" > /dev/null; then
-    echo "Ollama service started successfully."
-else
-    echo "Failed to start Ollama service. Check /tmp/ollama_start.log for details."
-fi
+echo "Waiting for Ollama service to be available..."
+
+while ! pgrep -f "ollama" > /dev/null; do
+    if [ "$attempt" -gt "$max_retries" ]; then
+        echo "Failed to start Ollama service after $max_retries attempts."
+        echo "Check /tmp/ollama_start.log for details."
+        exit 1
+    fi
+
+    echo "Attempt $attempt: Ollama not yet available, retrying in $retry_interval seconds..."
+    sleep "$retry_interval"
+    ((attempt++))
+done
+
+echo "Ollama service started successfully and is now accessible."
