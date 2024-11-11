@@ -1,7 +1,11 @@
 # incari-take-home-task
-
+This project containerizes a Streamlit application with Ollama integration, allowing seamless local or Docker-based deployment. It ensures the Ollama service is running before generating node sequences, configured to handle both local and Docker environments dynamically.
 ## Instructions to Run the Streamlit App standalone
+
 ## Setup the server by running the following commands:
+
+Please donwload and install ollama from the following link: https://ollama.com/
+
 
 ```bash
 chmod +x start_llama.sh
